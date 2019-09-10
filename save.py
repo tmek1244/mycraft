@@ -24,10 +24,6 @@ class ChunkSave:
     HEIGHT_OF_TERRAIN = 30
 
     def __init__(self, pos_x, pos_z):
-
-        self.top = get_tex('sand.png')
-        self.side = get_tex('grass_side.png')
-        self.bottom = get_tex('dirt.png')
         self.textures = get_tex('textures.png')
         self.previous_block_type = 0
         self.is_draw = False
@@ -132,11 +128,6 @@ class ChunkSave:
             self.vertex_list[(x, y, z, "d")] = self.add_to_batch(x, y, z, "down", block_type)
         if "t" in where:
             self.vertex_list[(x, y, z, "t")] = self.add_to_batch(x, y, z, "top", block_type)
-
-    def set_texture(self, block_type):
-        self.top = get_tex(self.top_texture[block_type - 1])
-        self.side = get_tex(self.side_texture[block_type - 1])
-        self.bottom = get_tex(self.bottom_texture[block_type - 1])
 
     def add_to_batch(self, x, y, z, where, block_type):
         tex_coords = ('t2f', (0, 7/8, 1/8, 7/8, 1/8, 1, 0, 1))

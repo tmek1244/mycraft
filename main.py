@@ -63,8 +63,6 @@ class Window(pyglet.window.Window):
                                        x=self.width // 2,
                                        y=self.height // 2,
                                        anchor_x='center', anchor_y='center')
-        self.image = image.load('dirt.png')
-
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.player.mouse_press(button)
@@ -98,6 +96,7 @@ class Window(pyglet.window.Window):
         glPopMatrix()
         self.set2d()
         self.label.draw()
+
 
 if __name__ == '__main__':
     window = Window(width=854, height=480, caption='Minecraft', resizable=True)
