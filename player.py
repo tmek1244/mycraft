@@ -42,24 +42,38 @@ class Player:
 
         if button == mouse.RIGHT:
             x, y, z, too_far = self.calculate_coordinates("add")
-            if not too_far:
+            if not too_far and not self.is_there_player(x, y, z):
                 self.model.add_block(x, y, z)
+            else:
+                print(too_far, self.is_there_player(x, y, z))
 
     def calculate_coordinates(self, which_block):
+        delta = 0.001
         v_x, v_y, v_z = self.calculate_vector()
         x, y, z = self.pos[0], self.pos[1], self.pos[2]
         too_far = False
         while self.model.return_world(x, y, z) == 0 and self.distance(x, y, z) < 5:
-            x += 0.01*v_x
-            y += 0.01*v_y
-            z += 0.01*v_z
+            x += delta*v_x
+            y += delta*v_y
+            z += delta*v_z
             if self.distance(x, y, z) > 5:
                 too_far = True
 
         if which_block == "add":
-            return int(x - v_x), int(y - v_y), int(z - v_z), too_far
+            return math.floor(x - delta*v_x), int(y - delta*v_y), math.floor(z - delta*v_z), too_far
         else:
-            return int(x), int(y), int(z), too_far
+            return math.floor(x), int(y), math.floor(z), too_far
+
+    def is_there_player(self, x, y, z):
+        player_x = math.floor(self.pos[0])
+        player_y = math.floor(self.pos[1])
+        player_z = math.floor(self.pos[2])
+
+        x, y, z = int(x), int(y), int(z)
+
+        if (x, y, z) != (player_x, player_y, player_z) and (x, y, z) != (player_x, player_y - 1, player_z):
+            return False
+        return True
 
     def distance(self, x, y, z):
         return math.sqrt((x - self.pos[0])**2 + (y - self.pos[1])**2 + (z - self.pos[2])**2)
@@ -124,9 +138,9 @@ class Player:
             self.during_the_fall(dt)
 
     def during_uprise(self, dt):
-        height = self.height = self.model.return_height(self.pos[0], self.pos[1] + jump_speed(dt), self.pos[2])
+        self.height = self.model.return_height(self.pos[0], self.pos[1] + jump_speed(dt), self.pos[2])
         self.time = max(self.time - dt, 0)
-        if self.pos[1] + jump_speed(dt) >= height + self.PLAYER_HEIGHT:
+        if self.pos[1] + jump_speed(dt) >= self.height + self.PLAYER_HEIGHT:
             self.pos[1] += jump_speed(dt)
         else:
             self.in_jump = False

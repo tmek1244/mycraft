@@ -1,6 +1,6 @@
 from pyglet import clock
 from pyglet.gl import *
-from pyglet.window import key
+from pyglet.window import key, FPSDisplay
 from pyglet import image
 import math
 
@@ -28,15 +28,20 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
 
     def set2d(self):
-        self.Projection()
-        gluOrtho2D(0, self.width, 0, self.height)
+        glDisable(GL_DEPTH_TEST)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(0, float(self.width), 0, float(self.height), -1, 1)
         self.model_function()
 
     def set3d(self):
+        glCullFace(GL_BACK)
+        glEnable(GL_CULL_FACE)
+        glEnable(GL_DEPTH_TEST)
+        glDisable(GL_BLEND)
+
         self.my_projection()
         gluPerspective(70, self.width / self.height, 0.05, 1000)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
         self.model_function()
 
     def set_lock(self, state):
@@ -52,17 +57,22 @@ class Window(pyglet.window.Window):
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
         pyglet.clock.schedule(self.update)
+        self.how_far = 5
+        self.fps_display = FPSDisplay(self)
+        # self.fps_display.label.y = self.height - 50
+        # self.fps_display.label.x = self.width - 150
+        self.cross = pyglet.image.load('cross.png')
 
         self.model = Model()
         self.y = 0
-        self.player = Player(self.model, (10, 45, 10), (0, 0))
+        self.player = Player(self.model, (0.5, 45, 0.5), (0, 0))
 
         self.label = pyglet.text.Label('Hello, world',
                                        font_name='Times New Roman',
                                        font_size=36,
-                                       x=self.width // 2,
-                                       y=self.height // 2,
-                                       anchor_x='center', anchor_y='center')
+                                       x= 300,  # self.width // 2,
+                                       y= 300)  # self.height // 2,
+                                       # anchor_x='center', anchor_y='center')
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.player.mouse_press(button)
@@ -87,15 +97,15 @@ class Window(pyglet.window.Window):
         self.push(self.player.pos, self.player.rot)
         x = math.floor(self.player.pos[0] / 16)
         z = math.floor(self.player.pos[2] / 16)
-        how_far = 5
-
-        # print(clock.get_fps())
-
-        self.model.draw(x, z, how_far, (self.player.rot[0] + 180) % 360)
-
+        self.model.draw(x, z, self.how_far, (self.player.rot[0] + 180) % 360)
         glPopMatrix()
+        self.fps_display.draw()
         self.set2d()
-        self.label.draw()
+
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        self.cross.blit(self.width//2 - 20, self.height//2 - 20)
+        # self.label.draw()
 
 
 if __name__ == '__main__':

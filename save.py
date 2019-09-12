@@ -34,11 +34,11 @@ class ChunkSave:
         self.world = np.zeros((self.WIDTH + 2, self.HEIGHT, self.LENGTH + 2))
         self.vertex_list = {}
 
-        self.top_texture = ((0, 7/8, 1/8, 7/8, 1/8, 1, 0, 1),  # grass_top
-                            (2/8, 7/8, 3/8, 7/8, 3/8, 1, 2/8, 1),  # dirt
-                            (3/8, 7/8, 4/8, 7/8, 4/8, 1, 3/8, 1),  # stone
-                            (4/8, 7/8, 5/8, 7/8, 5/8, 1, 4/8, 1),  # sand
-                            (7/8, 7/8, 1, 7/8, 1, 1, 7/8, 1))  # wood_top
+        self.top_texture = ((0, 7/8, 1/8, 7/8, 1/8, 1, 0, 1),  # grass_top 1
+                            (2/8, 7/8, 3/8, 7/8, 3/8, 1, 2/8, 1),  # dirt 2
+                            (3/8, 7/8, 4/8, 7/8, 4/8, 1, 3/8, 1),  # stone 3
+                            (4/8, 7/8, 5/8, 7/8, 5/8, 1, 4/8, 1),  # sand 4
+                            (6/8, 7/8, 7/8, 7/8, 7/8, 1, 6/8, 1))  # wood_top 5
         self.side_texture = ((1/8, 7/8, 2/8, 7/8, 2/8, 1, 1/8, 1),  # grass_side
                              (2/8, 7/8, 3/8, 7/8, 3/8, 1, 2/8, 1),  # dirt
                              (3/8, 7/8, 4/8, 7/8, 4/8, 1, 3/8, 1),  # stone
@@ -48,7 +48,7 @@ class ChunkSave:
                                (2/8, 7/8, 3/8, 7/8, 3/8, 1, 2/8, 1),  # dirt
                                (3/8, 7/8, 4/8, 7/8, 4/8, 1, 3/8, 1),  # stone
                                (4/8, 7/8, 5/8, 7/8, 5/8, 1, 4/8, 1),  # sand
-                               (7/8, 7/8, 1, 7/8, 1, 1, 7/8, 1))  # wood_top
+                               (6/8, 7/8, 7/8, 7/8, 7/8, 1, 6/8, 1))  # wood_top
 
         self.create_chunk()
 
@@ -81,10 +81,9 @@ class ChunkSave:
             for z in range(0, self.LENGTH):
                 if random.random() < 0.01:
                     y = self.return_height(x, self.HEIGHT - 1, z)
-                    # self.world[x, y, z] = 2
-                    # self.world[x, y + 1, z] = 2
-                    # self.world[x, y + 2, z] = 2
-                    self.world[x, y + 3, z] = 2
+                    self.world[x, y + 1, z] = 5
+                    self.world[x, y + 2, z] = 5
+                    self.world[x, y + 3, z] = 5
 
     def where_add_block(self, x, y, z):
         where = ""
@@ -111,9 +110,7 @@ class ChunkSave:
     def add_block(self, x, y, z, where, block_type):
         if "a" in where:
             self.world[x, y, z] = block_type
-        if self.previous_block_type != block_type:
-            # self.set_texture(int(block_type))
-            self.previous_block_type = block_type
+
         if "b" in where:
             self.vertex_list[(x, y, z, "b")] = self.add_to_batch(x, y, z, "back", block_type)
         if "f" in where:
@@ -130,7 +127,7 @@ class ChunkSave:
             self.vertex_list[(x, y, z, "t")] = self.add_to_batch(x, y, z, "top", block_type)
 
     def add_to_batch(self, x, y, z, where, block_type):
-        tex_coords = ('t2f', (0, 7/8, 1/8, 7/8, 1/8, 1, 0, 1))
+        # tex_coords = ('t2f', (0, 7/8, 1/8, 7/8, 1/8, 1, 0, 1))
         x += self.pos_x
         z += self.pos_z
         X, Y, Z = x + 1, y + 1, z + 1
@@ -146,7 +143,7 @@ class ChunkSave:
             "top": ((x, Y, Z, X, Y, Z, X, Y, z, x, Y, z), "t")
         }
         block_type = int(block_type)
-        print(block_type)
+        # print(block_type)
         if switcher.get(where)[1] == "s":
             tex_coords = self.side_texture[block_type - 1]
         elif switcher.get(where)[1] == "b":
@@ -168,7 +165,7 @@ class ChunkSave:
         # y -= 1
         # print(self.vertex_list)
         # print(x, y, z)
-        for letter in "bflrdt":
+        for letter in "bflrdt" if "u" in where else where:
             if (x, y, z, letter) in self.vertex_list:
                 # print(x, y, z, letter)
                 if (x, y, z, letter) in self.vertex_list:
@@ -176,25 +173,31 @@ class ChunkSave:
                 del self.vertex_list[(x, y, z, letter)]
         if "u" in where:
             self.world[x, y, z] = 0
-        if "f" in where:
-            self.check_and_add(x, y, z - 1, "f")
-        if "b" in where:
-            self.check_and_add(x, y, z + 1, "b")
-
-        if "r" in where:
-            self.check_and_add(x - 1, y, z, "r")
-        if "l" in where:
-            self.check_and_add(x + 1, y, z, "l")
-
-        if "t" in where:
-            self.check_and_add(x, y - 1, z, "t")
-        if "d" in where:
-            self.check_and_add(x, y + 1, z, "d")
+        # if "f" in where:
+        #     self.check_and_add(x, y, z + 1, "b")
+        # if "b" in where:
+        #     self.check_and_add(x, y, z - 1, "f")
+        #
+        # if "r" in where:
+        #     self.check_and_add(x + 1, y, z, "l")
+        # if "l" in where:
+        #     self.check_and_add(x - 1, y, z, "r")
+        #
+        # if "t" in where:
+        #     self.check_and_add(x, y + 1, z, "d")
+        # if "d" in where:
+        #     self.check_and_add(x, y - 1, z, "t")
 
     def check_and_add(self, x, y, z, word):
         # print("dodano: ", word, " na pozycji: ", x, y, z)  # self.world[x, y, z])e
         if self.world[x, y, z] != 0:
+            # print("check_and_add : ",x, y, z, word)
             self.add_block(x, y, z, word, self.world[x, y, z])
+
+    def check_and_delete_side(self, x, y, z, letter):
+        if (x, y, z, letter) in self.vertex_list:
+            self.vertex_list[(x, y, z, letter)].delete()
+            del self.vertex_list[(x, y, z, letter)]
 
     def return_world(self, x, y, z):
         try:
