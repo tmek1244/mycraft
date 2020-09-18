@@ -1,0 +1,14 @@
+chunk_size: 16
+max_height: 355
+terrain_height: 40
+
+game_window:
+  chunks: 15
+  min_size_x: 300
+  min_size_y: 200
+  player_start_position:
+    x: 0.5
+    y: 145
+    z: 0.5
+    rot_x: 0
+    rot_y: 0

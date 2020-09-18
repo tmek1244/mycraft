@@ -3,13 +3,11 @@ import math
 from pyglet.window import key
 from pyglet.window import mouse
 
+from equipment import Equipment
+
 
 def sign(x):
     return math.copysign(1, x)
-
-
-def jump_speed(dt):
-    return 1.5*dt/0.3
 
 
 class Player:
@@ -22,6 +20,8 @@ class Player:
         self.in_jump = False
         self.model = model
         self.height = 0
+        self.eq = Equipment()
+        self.item = 0
 
     def mouse_motion(self, dx, dy):
         dx /= 8
@@ -38,14 +38,16 @@ class Player:
         if button == mouse.LEFT:
             x, y, z, too_far = self.calculate_coordinates("remove")
             if not too_far:
-                self.model.delete_block(x, y, z)
+                self.eq.add_item(self.model.return_deleted_block(x, y, z))
+                # print(self.eq.print_content())
 
         if button == mouse.RIGHT:
             x, y, z, too_far = self.calculate_coordinates("add")
             if not too_far and not self.is_there_player(x, y, z):
-                self.model.add_block(x, y, z)
-            else:
-                print(too_far, self.is_there_player(x, y, z))
+                item_to_add = self.eq.take_item(self.item)
+                if item_to_add != 0:
+                    self.model.add_block(x, y, z, item_to_add)
+            # print(self.is_there_player(x, y, z))
 
     def calculate_coordinates(self, which_block):
         delta = 0.001
@@ -70,8 +72,10 @@ class Player:
         player_z = math.floor(self.pos[2])
 
         x, y, z = int(x), int(y), int(z)
+        # print(x, y, z, self.pos)
 
-        if (x, y, z) != (player_x, player_y, player_z) and (x, y, z) != (player_x, player_y - 1, player_z):
+        if (x, y, z) != (player_x, player_y, player_z) and (x, y, z) != (player_x, player_y - 1, player_z)\
+                and (x, y, z) != (player_x, math.floor(self.pos[1] - 1.79), player_z):
             return False
         return True
 
@@ -102,7 +106,7 @@ class Player:
         rotY = -self.rot[0] / 180 * math.pi
         dx, dz = speed * math.sin(rotY), speed * math.cos(rotY)
         if keys[key.SPACE]:
-            self.jump(self.height)
+            self.jump()
 
         if keys[key.W]:
             self.is_move_possible(dx, -dz)
@@ -116,10 +120,27 @@ class Player:
         if keys[key.LCTRL]:
             self.pos[1] -= speed
 
-    def jump(self, height):
-        if self.pos[1] <= height + self.PLAYER_HEIGHT:
-            self.in_jump = True
-            self.time = 0.3
+        if keys[key._1]:
+            self.item = 0
+        if keys[key._2]:
+            self.item = 1
+        if keys[key._3]:
+            self.item = 2
+        if keys[key._4]:
+            self.item = 3
+        if keys[key._5]:
+            self.item = 4
+        if keys[key._0]:
+            self.item = 5
+        if keys[key._0]:
+            self.item = 6
+        if keys[key._0]:
+            self.item = 7
+        if keys[key._9]:
+            self.item = 8
+        if keys[key._0]:
+            self.item = 9
+        # print("Is in air: ", self.is_in_air())
 
     def is_move_possible(self, dx, dz):
         self.is_move_possible_in_one_axis(dx, 0)
@@ -131,26 +152,39 @@ class Player:
                 <= self.pos[1] - self.PLAYER_HEIGHT + 0.1:
             self.pos[axis] += dx
 
+    def is_in_air(self):
+        height = self.model.return_max_height(self.pos)
+        if height + self.PLAYER_HEIGHT >= self.pos[1]:
+            return False
+        return True
+
+    def jump(self):
+        if not self.is_in_air():
+            self.in_jump = True
+            self.time = 0.3
+
     def gravity(self, dt):
         if self.in_jump and self.time > 0:
             self.during_uprise(dt)
         else:
             self.during_the_fall(dt)
 
+    def jump_speed(self, dt):
+        return 1.5 * dt / 0.3 if self.time > 0 else 8*dt**2 - 15*self.time*dt
+
     def during_uprise(self, dt):
-        self.height = self.model.return_height(self.pos[0], self.pos[1] + jump_speed(dt), self.pos[2])
+        self.height = self.model.return_height(self.pos[0], self.pos[1] + self.jump_speed(dt), self.pos[2])
         self.time = max(self.time - dt, 0)
-        if self.pos[1] + jump_speed(dt) >= self.height + self.PLAYER_HEIGHT:
-            self.pos[1] += jump_speed(dt)
+        if self.pos[1] + self.jump_speed(dt) >= self.height + self.PLAYER_HEIGHT:
+            self.pos[1] += self.jump_speed(dt)
         else:
             self.in_jump = False
 
     def during_the_fall(self, dt):
-        height_max = self.model.return_max_height(self.pos[0], self.pos[1], self.pos[2])
-
-        if self.pos[1] > height_max + self.PLAYER_HEIGHT:
-            self.pos[1] = max(self.pos[1] - jump_speed(dt), height_max + self.PLAYER_HEIGHT)
+        height_max = self.model.return_max_height(self.pos)
+        if self.is_in_air():
+            self.time -= dt
+            self.pos[1] = max(self.pos[1] - self.jump_speed(dt), height_max + self.PLAYER_HEIGHT)
         else:
             self.time = 0
-            self.in_jump = False
 
