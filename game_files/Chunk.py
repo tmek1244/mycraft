@@ -1,12 +1,10 @@
-import _thread
-
 import numpy as np
 import noise
 
 
 from pyglet.gl import *
 
-from Settings import Settings
+from game_files.Settings import Settings
 from biomes import meadowBiome
 
 TRANSPARENT_BLOCKS = (0, 8)

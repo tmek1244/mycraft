@@ -5,7 +5,7 @@ class Settings:
     settings = None
 
     def __init__(self):
-        with open("config.yml", "r") as config_file:
+        with open("game_files/config.yml", "r") as config_file:
             Settings.settings = yaml.safe_load(config_file)
 
     def __call__(self):

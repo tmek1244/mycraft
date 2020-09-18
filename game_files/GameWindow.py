@@ -3,9 +3,9 @@ import math
 from pyglet.gl import *
 from pyglet.window import FPSDisplay, key
 
-from Settings import Settings
-from model import Model
-from player import Player
+from game_files.Settings import Settings
+from game_files.Model import Model
+from game_files.Player import Player
 
 
 class GameWindow(pyglet.window.Window):

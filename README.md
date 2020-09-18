@@ -6,6 +6,14 @@
 * pyYAML 5.3.1
 * numpy 1.19.2
 
+## Setup
+
+In order to run the game, go to the main directory and run command:
+```
+$ PYTHONPATH=`pwd` python3 game_files/Setup.py 
+```
+
+
 ## Game
 
 ![](minecraft1.png)
