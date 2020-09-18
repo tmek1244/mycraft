@@ -1,7 +1,7 @@
 from pyglet.gl import *
 
 
-from GameWindow import GameWindow
+from game_files.GameWindow import GameWindow
 
 
 def my_craft():

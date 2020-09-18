@@ -2,9 +2,9 @@ import math
 import random
 
 
-from Chunk import Chunk
-from Chunk import TRANSPARENT_BLOCKS
-from Settings import Settings
+from game_files.Chunk import Chunk
+from game_files.Chunk import TRANSPARENT_BLOCKS
+from game_files.Settings import Settings
 
 
 def which_chunk(x, y):

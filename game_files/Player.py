@@ -3,7 +3,7 @@ import math
 from pyglet.window import key
 from pyglet.window import mouse
 
-from equipment import Equipment
+from game_files.equipment import Equipment
 
 
 def sign(x):
